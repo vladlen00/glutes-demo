@@ -242,6 +242,20 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
 .pgsheet .cblk b{display:block;font-size:14px;margin-bottom:3px;}
 .pgsheet .cblk span{font-size:13px;color:var(--muted);line-height:1.5;}
 @media (prefers-reduced-motion: reduce){ .pgsheet-ov,.pgsheet{transition:none;} }
+
+/* ДЕМО: приглашение под видео. Открыт один разбор из двадцати, и честнее всего
+   сказать это прямо там, где она досмотрела. Без хранилища и скриптов. */
+.demo-upsell{
+  margin-top:18px;padding:16px;
+  background:var(--cover);border:1px solid var(--hair);border-radius:14px;
+}
+.demo-upsell-title{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:6px;}
+.demo-upsell-text{font-size:0.85rem;line-height:1.5;color:var(--muted,#8E867B);margin-bottom:12px;}
+.demo-upsell-cta{
+  display:block;text-align:center;padding:12px 16px;
+  background:#EA5F1A;border:1px solid #EA5F1A;border-radius:14px;
+  color:#F5F0E8;font-size:0.9rem;font-weight:700;text-decoration:none;
+}
 </style>
 </head>
 <body>
@@ -279,6 +293,11 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
           <div class="player-desc-text" id="playerDescText"></div>
         </div>
       </details>
+      <div class="demo-upsell">
+        <div class="demo-upsell-title">Это только основы</div>
+        <div class="demo-upsell-text">Ещё 19 разборов техники и 10 тренировок доступны по подписке.</div>
+        <a class="demo-upsell-cta" href="https://app.irenabio.com/?from=demo-glutes">Открыть полный доступ</a>
+      </div>
     </div>
   </div>
 
