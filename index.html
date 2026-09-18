@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Биохакинг ягодиц · демо</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#100f0e; --cover:#1a1816; --accent:#df6a2c;
+  --text:#f2efe8; --muted:#837e74; --hair:rgba(242,239,232,0.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:'Manrope',sans-serif;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* Шапка-обложка */
+.cover{position:relative;background:var(--cover);padding:44px 24px 28px;overflow:hidden;}
+/* Слот под фоновую иллюстрацию (ягодицы лягут позже). Когда будет картинка -
+   задать на #coverBg:
+     background-image: linear-gradient(180deg,rgba(16,15,14,.15),rgba(26,24,22,.85)), url('cover.jpg');
+     opacity: 1;
+   градиент сверху держит текст читаемым. Сейчас слот пуст -> сплошной #1a1816. */
+.cover-bg{position:absolute;inset:0;opacity:0;background-position:center;background-size:cover;background-repeat:no-repeat;}
+.cover-inner{position:relative;z-index:1;}
+.cover-title{font-family:'Archivo',sans-serif;font-weight:800;font-size:2rem;line-height:1.05;
+  text-transform:uppercase;color:var(--text);}
+.cover-sub{font-family:'Manrope',sans-serif;font-weight:500;font-size:0.82rem;color:var(--muted);margin-top:11px;}
+
+/* Вкладки-подчёркивания (не пилюли) */
+.tabs{display:flex;gap:28px;padding:18px 24px 0;border-bottom:1px solid var(--hair);}
+.tab{position:relative;background:none;border:none;cursor:pointer;padding:0 0 12px;
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:0.72rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--muted);}
+.tab.active{color:var(--text);}
+.tab.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent);}
+
+/* Загрузка (короткий момент tg-auth) */
+.loading{display:none;align-items:center;justify-content:center;flex:1;padding:48px;}
+.loading.active{display:flex;}
+.loading-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+/* Список нумерованный, без коробок, волосяные линии между пунктами */
+.list-screen{display:none;flex-direction:column;flex:1;padding:4px 24px 40px;}
+.list-screen.active{display:flex;}
+.panel{display:none;}
+.panel.active{display:block;}
+.row{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid var(--hair);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.row:active{opacity:.55;}
+.row-num{flex-shrink:0;width:26px;font-family:'Archivo',sans-serif;font-weight:800;font-size:1.05rem;color:var(--accent);}
+.row-info{flex:1;min-width:0;}
+.row-name{font-family:'Manrope',sans-serif;font-weight:600;font-size:0.98rem;color:var(--text);}
+.row-dur{margin-top:5px;font-family:'Archivo',sans-serif;font-weight:800;font-size:0.6rem;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+/* Тонкая контурная круглая кнопка play, иконка оранжевая через currentColor */
+.row-play{flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--accent);
+  background:none;color:var(--accent);display:flex;align-items:center;justify-content:center;padding-left:2px;}
+/* Значки мышц на вкладке Техника: одного размера с кнопкой play (34px), высоту строки не меняют */
+.tech-muscle{flex-shrink:0;display:flex;align-items:center;gap:2px;}
+.tech-muscle img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;}
+.row.locked{opacity:0.55;}
+.row-soon{margin-top:5px;font-family:'Manrope',sans-serif;font-weight:600;font-size:0.7rem;
+  letter-spacing:0.02em;color:var(--muted);}
+/* Мягкая строка-завершение под коротким списком, чтобы вкладка не смотрелась куце */
+.list-soon{padding:24px 4px 6px;text-align:center;font-family:'Manrope',sans-serif;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.03em;color:var(--muted);}
+
+/* Плеер */
+.player-screen{display:none;flex-direction:column;flex:1;}
+.player-screen.active{display:flex;}
+.player-back{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;
+  margin:14px 24px 8px;padding:0;background:none;border:none;cursor:pointer;color:var(--text);
+  font-family:'Manrope',sans-serif;font-weight:600;font-size:0.9rem;-webkit-tap-highlight-color:transparent;}
+.player-back::before{content:'';width:8px;height:8px;border-left:2px solid var(--accent);
+  border-bottom:2px solid var(--accent);transform:rotate(45deg);flex-shrink:0;}
+.player-wrap{position:relative;width:100%;aspect-ratio:9/16;margin:0 auto;background:#000;flex-shrink:0;}
+.player-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.player-info{padding:18px 24px 32px;}
+.player-title{font-family:'Archivo',sans-serif;font-weight:800;font-size:1.15rem;
+  text-transform:uppercase;color:var(--text);}
+
+/* Описание тренировки: нативный details, JS для раскрытия не нужен */
+.player-desc{margin-top:18px;}
+.player-desc summary{
+  list-style:none;cursor:pointer;
+  font-family:'Manrope',sans-serif;font-size:0.85rem;font-weight:600;
+  letter-spacing:0.02em;color:var(--text);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:var(--cover);
+  border:1px solid var(--hair);
+  border-radius:14px;padding:12px 16px;
+  transition:background 0.25s,border-color 0.25s;
+  -webkit-tap-highlight-color:transparent;
+}
+.player-desc summary::-webkit-details-marker{display:none;}
+.player-desc summary:active{background:rgba(223,106,44,0.12);}
+.player-desc summary::after{
+  content:'';width:8px;height:8px;
+  border-right:2px solid var(--accent);
+  border-bottom:2px solid var(--accent);
+  transform:rotate(45deg);transition:transform 0.25s;
+  flex-shrink:0;margin-top:-3px;
+}
+.player-desc[open] summary{
+  background:rgba(223,106,44,0.10);
+  border-color:rgba(223,106,44,0.40);
+}
+.player-desc[open] summary::after{transform:rotate(225deg);margin-top:3px;}
+.player-desc-body{margin-top:12px;}
+.player-desc-subhead{
+  font-family:'Manrope',sans-serif;font-weight:700;font-size:0.95rem;
+  line-height:1.4;color:var(--accent);margin-bottom:8px;
+}
+.player-desc-text{
+  font-family:'Manrope',sans-serif;font-size:0.85rem;font-weight:400;
+  line-height:1.65;color:rgba(242,239,232,0.78);
+  white-space:pre-line;
+}
+
+/* ====== Вкладка «Прогресс» - токены мокапа scoped под .pg (не трогают остальную аппу) ====== */
+.pg{
+  --bg:#0B0A09;--panel:#141210;--card:#1B1815;--card2:#241F1B;--line:#2A2521;--track:#2E2823;
+  --accent:#EA5F1A;--accent-bright:#FF7A2E;--peach:#EBA968;
+  --text:#F5F0E8;--muted:#8E867B;--muted2:#6A635B;
+  font-family:'Inter',system-ui,sans-serif;color:var(--text);padding:8px 0 12px;
+}
+.pg :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.pg .hi{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;font-size:26px;margin:8px 0 3px;line-height:1.1;}
+.pg .sub{color:var(--muted);font-size:13px;margin-bottom:16px;}
+.pg .sec-h{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--muted);margin:2px 0 12px;}
+
+/* маленькая ссылка цели сбоку от заголовка */
+.pg .hirow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 3px;}
+.pg .hirow .hi{margin:0;}
+.pg .goallink{flex:none;background:none;border:none;color:var(--accent);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;padding:4px 0;white-space:nowrap;}
+.pg .goallink:hover{opacity:.8;}
+
+/* неделя */
+.pg .wk{display:flex;justify-content:space-between;gap:5px;}
+.pg .wd{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;padding:0;cursor:pointer;font:inherit;}
+.pg .wd .wc{width:100%;aspect-ratio:1;border-radius:13px;border:1.5px solid var(--line);background:var(--card);display:grid;place-items:center;color:var(--muted2);}
+.pg .wd .wl{font-size:10px;color:var(--muted2);}
+.pg .wd .wc svg{width:19px;height:19px;}
+.pg .wd.trained .wc{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pg .wd.trained .wl{color:var(--text);}
+.pg .wd.today .wc{border:2px solid var(--accent);background:rgba(234,95,26,.1);color:var(--accent);}
+.pg .wd.today .wl{color:var(--accent);font-weight:600;}
+.pg .wd.today.trained .wc{background:var(--accent);color:#fff;}
+
+/* копилки-сосуды */
+.pg .jars{display:flex;gap:16px;justify-content:center;margin-top:24px;}
+.pg .jar{flex:1;max-width:118px;text-align:center;}
+.pg .vessel{height:150px;border:2px solid var(--line);border-radius:16px 16px 20px 20px;position:relative;overflow:hidden;background:var(--card);}
+.pg .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-radius:0 0 18px 18px;transition:height .3s ease;}
+.pg .fill.peach{background:linear-gradient(180deg,#f4bd86,var(--peach));}
+.pg .vessel .vt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;}
+.pg .vessel .vn{font-family:'Oswald',sans-serif;font-weight:700;font-size:26px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.4);}
+.pg .vessel .vn small{font-size:13px;opacity:.85;}
+.pg .jar .jl{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.06em;margin-top:10px;}
+.pg .stepper{display:inline-flex;align-items:center;margin-top:11px;border:1px solid var(--line);border-radius:100px;overflow:hidden;}
+.pg .stepper button{width:32px;height:30px;background:var(--card2);border:none;color:var(--text);font-size:17px;cursor:pointer;}
+.pg .stepper button.plus{background:var(--accent);color:#fff;}
+.pg .stepper span{width:32px;text-align:center;font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;}
+
+/* привычки */
+.pg .checklist{margin-top:6px;}
+.pg .ci{display:flex;align-items:center;gap:13px;padding:13px 2px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left;cursor:pointer;font:inherit;color:var(--text);}
+.pg .ci:last-child{border-bottom:none;}
+.pg .cb{width:26px;height:26px;border-radius:8px;border:1.5px solid #3a342e;flex:none;display:grid;place-items:center;font-size:15px;color:transparent;}
+.pg .ci.on .cb{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pg .ci .cl b{display:block;font-weight:600;font-size:14px;}
+.pg .ci .cl span{font-size:11px;color:var(--muted);}
+
+/* экран цели */
+.pg .pg-back{display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:var(--accent);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;padding:4px 0;margin-bottom:6px;}
+.pg .pg-back::before{content:'';width:8px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(45deg);flex-shrink:0;}
+.pg .gnote{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:20px;}
+.pg .gnote b{color:var(--text);}
+.pg .opt{display:flex;align-items:center;gap:16px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:15px 16px;margin-bottom:12px;position:relative;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--text);}
+.pg .opt .onum{font-family:'Oswald',sans-serif;font-weight:700;font-size:30px;line-height:1;min-width:54px;text-align:center;color:var(--muted);}
+.pg .opt .oinfo b{display:block;font-size:14.5px;font-weight:600;}
+.pg .opt .oinfo span{font-size:11.5px;color:var(--muted);}
+.pg .opt.sel{border-color:var(--accent);background:rgba(234,95,26,.07);}
+.pg .opt.sel .onum{color:var(--accent);}
+.pg .opt .chk{position:absolute;right:14px;top:14px;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);}
+.pg .opt.sel .chk{background:var(--accent);border-color:var(--accent);display:grid;place-items:center;}
+.pg .opt.sel .chk::after{content:"✓";color:#fff;font-size:12px;}
+.pg .warn{display:flex;gap:9px;align-items:flex-start;background:rgba(234,95,26,.09);border:1px solid rgba(234,95,26,.3);border-radius:12px;padding:11px 12px;font-size:11.5px;line-height:1.45;color:var(--muted);margin:-2px 0 14px;}
+.pg .warn b{color:var(--text);}
+.pg .saveb{margin-top:6px;background:var(--accent);color:#fff;border:none;border-radius:15px;padding:15px;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:14px;width:100%;cursor:pointer;}
+@media (prefers-reduced-motion: reduce){ .pg .fill{transition:none;} }
+
+/* значок «?» над копилками (что такое монетка) */
+.pg .coinq-row{display:flex;justify-content:flex-end;margin-top:24px;}
+.pg .coinq-row + .jars{margin-top:8px;}
+.pg .coinq{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);background:none;color:var(--accent);font-family:'Inter',sans-serif;font-weight:700;font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}
+.pg .coinq:active{opacity:.6;}
+
+/* подсказка первого запуска (над рядом дней) */
+.pg .pg-hint{position:relative;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.45;color:var(--text);margin:2px 0 12px;cursor:pointer;}
+.pg .pg-hint::after{content:'';position:absolute;left:26px;bottom:-7px;width:12px;height:12px;background:var(--card2);border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg);}
+
+/* ====== Общий bottom-sheet (окно тренировки и «что такое монетка») ====== */
+.pgsheet-ov{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease;}
+.pgsheet-ov.open{opacity:1;visibility:visible;}
+.pgsheet{--panel:#141210;--card:#1B1815;--card2:#241F1B;--line:#2A2521;--accent:#EA5F1A;--peach:#EBA968;--text:#F5F0E8;--muted:#8E867B;
+  width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-sizing:border-box;
+  background:var(--panel);border-top:1px solid var(--line);border-radius:22px 22px 0 0;
+  padding:14px 22px calc(24px + env(safe-area-inset-bottom,0px));
+  font-family:'Inter',system-ui,sans-serif;color:var(--text);
+  transform:translateY(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1);}
+.pgsheet-ov.open .pgsheet{transform:translateY(0);}
+.pgsheet :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.pgsheet .grip{width:38px;height:4px;border-radius:2px;background:#3a342e;margin:0 auto 16px;}
+.pgsheet .sh-title{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;line-height:1.12;margin-bottom:12px;}
+.pgsheet .sh-foot{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px;}
+.pgsheet .sh-close{margin-top:16px;width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:15px;padding:14px;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:14px;cursor:pointer;}
+.pgsheet .sh-primary{margin-top:16px;width:100%;background:var(--accent);color:#fff;border:none;border-radius:15px;padding:15px;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:14px;cursor:pointer;}
+/* окно тренировки: легенда, строки, числа */
+.pgsheet .tr-legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:14px;}
+.pgsheet .tr-legend .lg{display:inline-flex;align-items:center;gap:6px;}
+.pgsheet .dotb,.pgsheet .dotm{width:11px;height:11px;border-radius:50%;}
+.pgsheet .dotb{background:var(--accent);}
+.pgsheet .dotm{background:var(--peach);}
+.pgsheet .tr{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;color:var(--text);font:inherit;}
+.pgsheet .tr:active{opacity:.6;}
+.pgsheet .tr-info{flex:1;min-width:0;}
+.pgsheet .tr-name{font-weight:600;font-size:14.5px;}
+.pgsheet .tr-ex{font-size:11.5px;color:var(--muted);margin-top:3px;}
+.pgsheet .tr-nums{flex:none;display:flex;gap:10px;align-items:center;font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;}
+.pgsheet .tr-nums .nb{color:var(--accent);}
+.pgsheet .tr-nums .nm{color:var(--peach);}
+/* окно «что такое монетка»: блоки */
+.pgsheet .cblk{padding:12px 0;border-bottom:1px solid var(--line);}
+.pgsheet .cblk:last-of-type{border-bottom:none;}
+.pgsheet .cblk b{display:block;font-size:14px;margin-bottom:3px;}
+.pgsheet .cblk span{font-size:13px;color:var(--muted);line-height:1.5;}
+@media (prefers-reduced-motion: reduce){ .pgsheet-ov,.pgsheet{transition:none;} }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ДЕМО: на месте кнопки возврата в приложение стоит выход к полному доступу.
+       Видна всегда: демо живёт только в браузере. -->
+  <button id="demoMoreBtn" type="button" onclick="location.href='https://app.irenabio.com/?from=demo-glutes'"
+    style="display:inline-flex;align-items:center;gap:6px;margin:14px 20px 0;padding:8px 14px;background:rgba(0,0,0,0.28);border:1px solid rgba(242,239,232,0.28);border-radius:12px;color:#f2efe8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Что ещё есть</button>
+  <header class="cover">
+    <div class="cover-bg" id="coverBg"></div>
+    <div class="cover-inner">
+      <h1 class="cover-title">Биохакинг ягодиц</h1>
+      <div class="cover-sub">с Иреной Пол</div>
+    </div>
+  </header>
+
+  <div class="loading active" id="loadingScreen"><div class="loading-dot"></div></div>
+
+  <div class="list-screen" id="listScreen">
+    <div class="panel active" id="panel-techniques"><div id="techniqueList"></div></div>
+  </div>
+
+  <div class="player-screen" id="playerScreen">
+    <button class="player-back" type="button" onclick="closeVideo()">Назад</button>
+    <div class="player-wrap">
+      <iframe id="videoFrame" src="" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" allowfullscreen></iframe>
+    </div>
+    <div class="player-info">
+      <div class="player-title" id="playerTitle"></div>
+
+      <details class="player-desc" id="playerDesc">
+        <summary>Описание</summary>
+        <div class="player-desc-body">
+          <div class="player-desc-subhead" id="playerDescSubhead"></div>
+          <div class="player-desc-text" id="playerDescText"></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+// ДЕМО: расписание не читается, своего бэкенда тут нет вовсе. Единственный ролик
+// демо не gated, поэтому и множества разблокированных не нужно.
+
+// Play - только инлайновый SVG (как в фиксе workout), цвет наследует currentColor (оранжевый)
+const PLAY_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+// Замок - простой контурный SVG, цвет наследует currentColor
+const LOCK_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
+// Значки мышц для вкладки Техника (круглые бейджи, лежат ассетами в проекте).
+const MUSCLE_ICON = {
+  big: { src: 'muscle-big.png?v=1', alt: 'большая ягодичная' },
+  med: { src: 'muscle-med.png?v=1', alt: 'средняя ягодичная' }
+};
+// Один или два значка мышц слева от play. Пусто, если у элемента нет поля muscles
+// (так вкладка Тренировки, где muscles нет, остаётся без изменений).
+function muscleIcons(v) {
+  if (!v.muscles || !v.muscles.length) return '';
+  const imgs = v.muscles.map(m => {
+    const it = MUSCLE_ICON[m];
+    return it ? `<img src="${it.src}" alt="${it.alt}" width="34" height="34">` : '';
+  }).join('');
+  return `<div class="tech-muscle">${imgs}</div>`;
+}
+
+// Kinescope: храним ID, embed строим как в workout -> https://kinescope.io/embed/{ID}
+// ДЕМО: каталог тренировок выброшен целиком. В файле остаётся РОВНО ОДИН
+// Kinescope ID. Белый список Kinescope доменный, а не постраничный: любой
+// лишний ID, оставленный здесь, играл бы у любого, кто откроет исходник.
+// muscles: значки мышц (big/med) слева от play. '01' - вводное, без значка.
+const TECHNIQUES = [
+  { num: '01', title: 'Базовые правила',  duration: '9:27', id: 'xpQ2hHSjvAGebW39gs3Thy' },
+];
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'progress' && typeof pgCloseGoal === 'function') pgCloseGoal(); // всегда открываем экран 1
+}
+
+// ДЕМО: замков нет. Единственный ролик открыт, а gated-элементы сюда не попали.
+function isLocked(item) { return false; }
+
+function renderList(elId, items) {
+  const el = document.getElementById(elId);
+  el.innerHTML = items.map(v => {
+    const locked = isLocked(v);
+    return `
+    <div class="row${locked ? ' locked' : ''}">
+      <div class="row-num">${v.num}</div>
+      <div class="row-info">
+        <div class="row-name">${v.title}</div>
+        ${locked ? '<div class="row-soon">скоро</div>' : `<div class="row-dur">${v.duration}</div>`}
+      </div>
+      ${muscleIcons(v)}
+      <div class="row-play">${locked ? LOCK_SVG : PLAY_SVG}</div>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.row').forEach((row, i) => { row.onclick = () => { if (isLocked(items[i])) return; openVideo(items[i]); }; });
+}
+
+function openVideo(item) {
+  document.getElementById('videoFrame').src = 'https://kinescope.io/embed/' + item.id;
+  document.getElementById('playerTitle').textContent = item.title;
+
+  // Описание: первая строка - подзаголовок, остальное - текст.
+  // Всегда стартует свёрнутым. Нет описания -> блок скрыт, пустой рамки не остаётся.
+  // textContent, а не innerHTML: теги в описании не исполняются.
+  const desc = document.getElementById('playerDesc');
+  if (item.description) {
+    const lines = item.description.split('\n');
+    document.getElementById('playerDescSubhead').textContent = lines[0];
+    document.getElementById('playerDescText').textContent = lines.slice(1).join('\n').replace(/^\n+/, '');
+    desc.open = false;
+    desc.style.display = '';
+  } else {
+    desc.style.display = 'none';
+  }
+
+  document.getElementById('listScreen').classList.remove('active');
+  document.getElementById('playerScreen').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function closeVideo() {
+  document.getElementById('videoFrame').src = '';
+  document.getElementById('playerScreen').classList.remove('active');
+  document.getElementById('listScreen').classList.add('active');
+}
+
+async function init() {
+  // ДЕМО: расписания нет, тренировок нет, трекера нет. Один список из одного ролика.
+  renderList('techniqueList', TECHNIQUES);
+  document.getElementById('loadingScreen').classList.remove('active');
+  document.getElementById('listScreen').classList.add('active');
+}
+
+// ДЕМО: гейта нет, практика открыта сразу.
+init();
+</script>
+</body>
+</html>
