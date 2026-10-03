@@ -65,6 +65,10 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
 .tech-muscle{flex-shrink:0;display:flex;align-items:center;gap:2px;}
 .tech-muscle img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;}
 .row.locked{opacity:0.55;}
+/* ДЕМО: заголовки двух списков и нажимаемые закрытые строки (ведут в оформление). */
+.demo-sec{padding:26px 0 2px;font-family:'Archivo',sans-serif;font-weight:800;font-size:0.68rem;
+  letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);}
+.row.locked.demo-buy{cursor:pointer;}
 .row-soon{margin-top:5px;font-family:'Manrope',sans-serif;font-weight:600;font-size:0.7rem;
   letter-spacing:0.02em;color:var(--muted);}
 /* Мягкая строка-завершение под коротким списком, чтобы вкладка не смотрелась куце */
@@ -260,10 +264,10 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
 </head>
 <body>
 <div class="app">
-  <!-- ДЕМО: на месте кнопки возврата в приложение стоит выход к полному доступу.
+  <!-- ДЕМО: возврат на витрину app.irenabio.com (03.10, было «Что ещё есть»).
        Видна всегда: демо живёт только в браузере. -->
   <button id="demoMoreBtn" type="button" onclick="location.href='https://app.irenabio.com/?from=demo-glutes'"
-    style="display:inline-flex;align-items:center;gap:6px;margin:14px 20px 0;padding:8px 14px;background:rgba(0,0,0,0.28);border:1px solid rgba(242,239,232,0.28);border-radius:12px;color:#f2efe8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Что ещё есть</button>
+    style="display:inline-flex;align-items:center;gap:6px;margin:14px 20px 0;padding:8px 14px;background:rgba(0,0,0,0.28);border:1px solid rgba(242,239,232,0.28);border-radius:12px;color:#f2efe8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">← Назад</button>
   <header class="cover">
     <div class="cover-bg" id="coverBg"></div>
     <div class="cover-inner">
@@ -275,7 +279,12 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);
   <div class="loading active" id="loadingScreen"><div class="loading-dot"></div></div>
 
   <div class="list-screen" id="listScreen">
-    <div class="panel active" id="panel-techniques"><div id="techniqueList"></div></div>
+    <div class="panel active" id="panel-techniques">
+      <div class="demo-sec">Разбор техники</div>
+      <div id="techniqueList"></div>
+      <div class="demo-sec">Тренировки</div>
+      <div id="workoutLockedList"></div>
+    </div>
   </div>
 
   <div class="player-screen" id="playerScreen">
@@ -395,9 +404,43 @@ function closeVideo() {
   document.getElementById('listScreen').classList.add('active');
 }
 
+// ДЕМО: что ждёт в подписке. Только номера и названия из боевого glutes, роликов нет:
+// в файле остаётся ровно один Kinescope ID. Нажатие ведёт в оформление подписки.
+const DEMO_BUY_URL = 'https://app.irenabio.com/?from=demo-glutes&buy=1';
+const LOCKED_TECHNIQUES = [
+  ['02', 'Присед техника 1'], ['03', 'Присед техника 2'], ['04', 'Румынская тяга'],
+  ['05', 'Мостик'], ['06', 'Подъём ноги лёжа на боку'], ['07', 'Выпад назад'],
+  ['08', 'Кик-бек (попомахи)'], ['09', '3D Кик-бек'], ['10', '3D лёжа на боку'],
+  ['11', 'Мостик с весом'], ['12', 'Отведение стоя'], ['13', 'Румынка. Одна нога'],
+  ['14', 'Румынка. 1 нога + вес'], ['15', 'Присед-сумо'], ['16', 'Разминка + Активация'],
+  ['17', 'Плие Приседания'], ['18', 'Выпады 3D'], ['19', 'Румынка с упором в стену'],
+  ['20', 'Мостик с дивана'],
+];
+const LOCKED_WORKOUTS = [
+  ['01', 'Зарядка'], ['02', 'Тренировка 1'], ['03', 'Тренировка 2'], ['04', 'Тренировка 3'],
+  ['05', 'Тренировка 4'], ['06', 'Тренировка 3D'], ['07', 'Тренировка 6'], ['08', 'Тренировка 7'],
+  ['09', 'Тренировка 8'], ['10', 'Тренировка 9'],
+];
+
+function appendLockedRows(elId, rows) {
+  const el = document.getElementById(elId);
+  el.insertAdjacentHTML('beforeend', rows.map(([num, title]) => `
+    <div class="row locked demo-buy">
+      <div class="row-num">${num}</div>
+      <div class="row-info">
+        <div class="row-name">${title}</div>
+        <div class="row-soon">по подписке</div>
+      </div>
+      <div class="row-play">${LOCK_SVG}</div>
+    </div>`).join(''));
+  el.querySelectorAll('.demo-buy').forEach((row) => { row.onclick = () => { location.href = DEMO_BUY_URL; }; });
+}
+
 async function init() {
-  // ДЕМО: расписания нет, тренировок нет, трекера нет. Один список из одного ролика.
+  // ДЕМО: расписания нет, трекера нет. Открыт один разбор, остальная программа под замком.
   renderList('techniqueList', TECHNIQUES);
+  appendLockedRows('techniqueList', LOCKED_TECHNIQUES);
+  appendLockedRows('workoutLockedList', LOCKED_WORKOUTS);
   document.getElementById('loadingScreen').classList.remove('active');
   document.getElementById('listScreen').classList.add('active');
 }
